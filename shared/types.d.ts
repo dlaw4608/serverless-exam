@@ -38,7 +38,7 @@ export type Movie = {
 
   export type MovieAwardQueryParams = {
     awardBody?: string;
-    numAwards?: number
+    numAwards?: number;
   }
   export type MovieCrewRole = {
     movieId: number;
