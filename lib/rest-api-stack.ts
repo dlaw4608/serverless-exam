@@ -105,7 +105,7 @@ export class RestAPIStack extends cdk.Stack {
 
     const getMovieAwardFn = new lambdanode.NodejsFunction(
       this,
-      "GetMovieAwardsFn",
+      "GetMovieAwardFn",
       {
         architecture: lambda.Architecture.ARM_64,
         runtime: lambda.Runtime.NODEJS_18_X,
