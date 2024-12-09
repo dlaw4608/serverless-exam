@@ -36,6 +36,10 @@ export type Movie = {
     awardDescription: string;
   };
 
+  export type MovieAwardQueryParams = {
+    awardBody?: string;
+    numAwards?: number
+  }
   export type MovieCrewRole = {
     movieId: number;
     crewRole: string;

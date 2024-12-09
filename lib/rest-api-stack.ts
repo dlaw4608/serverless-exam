@@ -41,6 +41,10 @@ export class RestAPIStack extends cdk.Stack {
       tableName: "MovieAwards",
     });
 
+    movieAwardsTable.addLocalSecondaryIndex({
+      indexName: "numIx",
+      sortKey: { name: "numAwards", type: dynamodb.AttributeType.NUMBER },
+    });
     const movieCrewTable = new dynamodb.Table(this, "MovieCrewTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: "movieId", type: dynamodb.AttributeType.NUMBER },
@@ -94,6 +98,22 @@ export class RestAPIStack extends cdk.Stack {
         memorySize: 128,
         environment: {
           TABLE_NAME: moviesTable.tableName,
+          REGION: "eu-west-1",
+        },
+      }
+    );
+
+    const getMovieAwardFn = new lambdanode.NodejsFunction(
+      this,
+      "GetMovieAwardsFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: `${__dirname}/../lambdas/getMovieAward.ts`,
+        timeout: cdk.Duration.seconds(10),
+        memorySize: 128,
+        environment: {
+          TABLE_NAME: movieAwardsTable.tableName,
           REGION: "eu-west-1",
         },
       }
@@ -158,10 +178,17 @@ export class RestAPIStack extends cdk.Stack {
       new apig.LambdaIntegration(deleteMovieByIdFn, { proxy: true })
     );
 
+    const movieAwardsEndpoint = movieEndpoint.addResource("awards");
+    movieAwardsEndpoint.addMethod(
+      "GET",
+      new apig.LambdaIntegration(getMovieAwardFn, { proxy: true })
+    )
+
     // Permissions;
     moviesTable.grantReadData(getMovieByIdFn);
     moviesTable.grantReadWriteData(deleteMovieByIdFn);
     movieCastsTable.grantReadData(getMovieCastMembersFn);
     movieCastsTable.grantReadData(getMovieByIdFn);
+    movieAwardsTable.grantReadData(getMovieAwardFn);
   }
 }
